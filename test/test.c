@@ -49,10 +49,49 @@ void print_hex(const void* src, int len)
         printf("%02x", *s++);
 }
 
+/**
+ * Determine endianness of the host machine
+ *
+ * The original implementation of this function likely worked just fine if dealing
+ * only with big and little endian machines. Trouble could arise for machines
+ * using PDP-11 or Honeywell 316.
+ *
+ * PDP-11 can actually be written by certain pre-v8 ARM architectures when trying
+ * to store a word on a 2-byte address boundary.
+ *
+ * This implementation will allow for us to check for those possibilities as well,
+ * if ever necessary.
+ *
+ * Storing a 32 bit value in the different endianness options is here for reference:
+ * Value to store: 0x0A0B0C0D
+ *
+ * Address: | 0x0 | 0x1 | 0x2 | 0x3 |
+ *    Byte: | 0Ah | 0Bh | 0Ch | 0Dh | <- Big Endian
+ *    Byte: | 0Dh | 0Ch | 0Bh | 0Ah | <- Little Endian
+ *    Byte: | 0Bh | 0Ah | 0Dh | 0Ch | <- PDP-11
+ *    Byte: | 0Ch | 0Dh | 0Ah | 0Bh | <- Honeywell 316
+ *
+ * [output] int    Integer that is non-zero if machine is big_endian
+ *
+ * Returns non-zero value if host machine is big-endian
+ */
 static inline int is_big_endian()
 {
-    int i=1;
-    return ! *((char *)&i);
+    volatile uint32_t i = 0x0A0B0C0D;
+    int big_endian = 0;
+    uint8_t* p = (uint8_t *) &i;
+    switch(*p)
+    {
+        case 0x0A:  //Big Endian
+            big_endian = 1;
+            break;
+        case 0x0B:  //PDP-11
+        case 0x0C:  //Honeywell 316
+        case 0x0D:  //Little Endian
+        default:    //memory corruption perhaps?
+            break;
+    }
+    return big_endian;
 }
 
 static inline uint32_t ntohl(uint32_t num)
