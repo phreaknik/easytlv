@@ -1,5 +1,5 @@
 # EasyTLV
-A lightweight and simple to use TLV serializer/deserializer library.
+A lightweight TLV encode/decode library.
 
 ### What is TLV?
 TLV (stands for Tag-Length-Value) is a commonly used data encoding scheme in communication protocols. It allows for payloads that include arbitrary length data, in arbitrary formats, at arbitrary offsets in the payload. While the protocol is simple, manual TLV parsing is often error prone. You may have seen manual TLV serialization or parsing code such as below:
